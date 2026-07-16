@@ -8,6 +8,10 @@ if (runs.length === 0) {
 
 for (const run of runs) {
   const latency = run.summary.latency;
+  const cost =
+    run.summary.totalCostUsd == null
+      ? "n/a"
+      : `$${run.summary.totalCostUsd.toFixed(6)}`;
   console.log(
     [
       run.id,
@@ -16,9 +20,10 @@ for (const run of runs) {
       latency
         ? `latency(mean/p50/p95)=${latency.meanMs.toFixed(0)}/${latency.p50Ms.toFixed(0)}/${latency.p95Ms.toFixed(0)}ms`
         : "latency=n/a",
+      `cost=${cost}`,
       `commit=${run.git.commit?.slice(0, 8) ?? "none"}`,
       `tag=${run.git.tag ?? "none"}`,
-      run.note,
+      run.note.split("\n")[0],
     ].join(" | "),
   );
 }

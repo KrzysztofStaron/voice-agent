@@ -2,6 +2,7 @@ import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
 import {
   latencyStats,
+  totalCostUsd,
   type ASR,
   type BenchmarkResult,
   type LatencyStats,
@@ -23,6 +24,8 @@ export type RunMeta = {
     samples: number;
     meanWer: number;
     latency: LatencyStats;
+    /** Estimated from response usage + published OpenAI rates; null if unavailable. */
+    totalCostUsd: number | null;
   };
 };
 
@@ -104,6 +107,7 @@ export async function saveRun(options: {
 
   const gitInfo = await captureGit(id);
   const latency = latencyStats(options.results);
+  const cost = totalCostUsd(options.results);
   const meta: RunMeta = {
     id,
     system: options.system.id,
@@ -114,6 +118,7 @@ export async function saveRun(options: {
       samples: options.results.length,
       meanWer: meanWer(options.results),
       latency,
+      totalCostUsd: cost,
     },
   };
 
@@ -129,6 +134,7 @@ export async function saveRun(options: {
       `- **Latency total:** ${formatMs(latency.totalMs)}\n` +
       `- **Latency mean / p50 / p95:** ${formatMs(latency.meanMs)} / ${formatMs(latency.p50Ms)} / ${formatMs(latency.p95Ms)}\n` +
       `- **Latency min / max:** ${formatMs(latency.minMs)} / ${formatMs(latency.maxMs)}\n` +
+      `- **Estimated cost:** ${cost == null ? "n/a" : `$${cost.toFixed(6)}`}\n` +
       `- **Git commit:** ${meta.git.commit ?? "none"}\n` +
       `- **Git tag:** ${meta.git.tag ?? "none"}\n` +
       `- **Dirty tree:** ${meta.git.dirty}\n\n` +
