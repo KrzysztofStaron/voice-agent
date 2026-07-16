@@ -1,8 +1,8 @@
 import { createReadStream } from "node:fs";
 import OpenAI from "openai";
-import { ASH } from "./ash";
+import { ASR } from "./asr";
 
-export class OpenAIASH extends ASH {
+export class OpenAIASR extends ASR {
   private client = new OpenAI();
   private model: string;
 

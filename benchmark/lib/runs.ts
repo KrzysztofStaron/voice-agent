@@ -1,6 +1,11 @@
 import { mkdir } from "node:fs/promises";
 import { join } from "node:path";
-import type { ASH, BenchmarkResult } from "../../ash";
+import {
+  latencyStats,
+  type ASR,
+  type BenchmarkResult,
+  type LatencyStats,
+} from "../../asr/asr";
 
 export type RunGitInfo = {
   commit: string | null;
@@ -17,6 +22,7 @@ export type RunMeta = {
   summary: {
     samples: number;
     meanWer: number;
+    latency: LatencyStats;
   };
 };
 
@@ -51,6 +57,10 @@ function meanWer(results: BenchmarkResult[]) {
   return results.reduce((sum, r) => sum + r.wer, 0) / results.length;
 }
 
+function formatMs(ms: number) {
+  return `${ms.toFixed(0)}ms`;
+}
+
 async function git(args: string[]) {
   const proc = Bun.spawn(["git", ...args], {
     cwd: process.cwd(),
@@ -83,7 +93,7 @@ async function captureGit(runIdValue: string): Promise<RunGitInfo> {
 }
 
 export async function saveRun(options: {
-  system: ASH;
+  system: ASR;
   results: BenchmarkResult[];
   note: string;
 }): Promise<SavedRun> {
@@ -93,6 +103,7 @@ export async function saveRun(options: {
   await mkdir(dir, { recursive: true });
 
   const gitInfo = await captureGit(id);
+  const latency = latencyStats(options.results);
   const meta: RunMeta = {
     id,
     system: options.system.id,
@@ -102,6 +113,7 @@ export async function saveRun(options: {
     summary: {
       samples: options.results.length,
       meanWer: meanWer(options.results),
+      latency,
     },
   };
 
@@ -114,6 +126,9 @@ export async function saveRun(options: {
       `- **Created:** ${meta.createdAt}\n` +
       `- **Mean WER:** ${meta.summary.meanWer.toFixed(4)}\n` +
       `- **Samples:** ${meta.summary.samples}\n` +
+      `- **Latency total:** ${formatMs(latency.totalMs)}\n` +
+      `- **Latency mean / p50 / p95:** ${formatMs(latency.meanMs)} / ${formatMs(latency.p50Ms)} / ${formatMs(latency.p95Ms)}\n` +
+      `- **Latency min / max:** ${formatMs(latency.minMs)} / ${formatMs(latency.maxMs)}\n` +
       `- **Git commit:** ${meta.git.commit ?? "none"}\n` +
       `- **Git tag:** ${meta.git.tag ?? "none"}\n` +
       `- **Dirty tree:** ${meta.git.dirty}\n\n` +
