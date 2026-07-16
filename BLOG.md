@@ -1,0 +1,2 @@
+We start we testing a simple ASh, I decided to split each component of voice agent as a separate class, so we can easly swap components. Without Changing logic.
+The first thing I want to optimize for is the accuracy/latency ratio.

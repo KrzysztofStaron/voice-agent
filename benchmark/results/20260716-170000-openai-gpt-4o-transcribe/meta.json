@@ -1,0 +1,15 @@
+{
+  "id": "20260716-170000-openai-gpt-4o-transcribe",
+  "system": "openai-gpt-4o-transcribe",
+  "createdAt": "2026-07-16T17:00:00.000Z",
+  "note": "Baseline OpenAI gpt-4o-transcribe before the run-archive system. Imported from the first console benchmark output.",
+  "git": {
+    "commit": null,
+    "dirty": true,
+    "tag": null
+  },
+  "summary": {
+    "samples": 12,
+    "meanWer": 0.04242647449169188
+  }
+}
